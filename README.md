@@ -16,8 +16,9 @@ The app displays a summary, expense breakdown by category, and transaction histo
 
 ## 🛠️ Technologies
 
-- **React Native** + **Expo**
-- **React Navigation**
+- **React Native** + **Expo** (Frontend)
+- **Express** (Backend)
+- **Expo Router Navigation**
 - **expo-sqlite** (local database)
 
 More coming ...
