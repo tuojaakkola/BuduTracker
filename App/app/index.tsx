@@ -1,26 +1,7 @@
-import { View, Text, StyleSheet } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { Redirect } from "expo-router";
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>BuduTracker</Text>
-      <Text>Welcome to BUDU</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  // Uudelleenohjaa suoraan home-sivulle
+  return <Redirect href="/(tabs)/home" />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-});

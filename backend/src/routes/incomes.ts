@@ -4,12 +4,12 @@ import prisma from '../lib/db.js';
 
 const router = express.Router();
 
-// CREATE - Luo uusi tulo
+// CREATE
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { name, amount, category, date } = req.body;
+    const { name, amount, categoryId, date } = req.body;
 
-    if (!name || !amount || !category || !date) {
+    if (!name || !amount || !categoryId || !date) {
       res.status(400).json({ error: 'Puuttuvia kenttiä' });
       return;
     }
@@ -18,8 +18,11 @@ router.post('/', async (req: Request, res: Response) => {
       data: {
         name,
         amount: parseFloat(amount),
-        category,
+        categoryId: parseInt(categoryId),
         date: new Date(date),
+      },
+      include: {
+        category: true,
       },
     });
 
@@ -29,10 +32,13 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET - Hae kaikki tulot
+// GET 
 router.get('/', async (req: Request, res: Response) => {
   try {
     const incomes = await prisma.income.findMany({
+      include: {
+        category: true,
+      },
       orderBy: { date: 'desc' },
     });
     res.json(incomes);
@@ -41,7 +47,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// UPDATE - Päivitä tulo
+// UPDATE 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
@@ -51,7 +57,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       return;
     }
     
-    const { name, amount, category, date } = req.body;
+    const { name, amount, categoryId, date } = req.body;
 
     const existingIncome = await prisma.income.findUnique({
       where: { id: parseInt(id) },
@@ -67,8 +73,11 @@ router.put('/:id', async (req: Request, res: Response) => {
       data: {
         ...(name && { name }),
         ...(amount && { amount: parseFloat(amount) }),
-        ...(category && { category }),
+        ...(categoryId && { categoryId: parseInt(categoryId) }),
         ...(date && { date: new Date(date) }),
+      },
+      include: {
+        category: true,
       },
     });
 
@@ -78,7 +87,7 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE - Poista tulo
+// DELETE 
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const id = req.params.id;

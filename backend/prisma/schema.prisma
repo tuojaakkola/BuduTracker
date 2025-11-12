@@ -7,22 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  type      String    // "income" tai "expense"
+  icon      String?
+  color     String?
+  expenses  Expense[]
+  incomes   Income[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 model Expense {
-  id        Int      @id @default(autoincrement())
-  name      String
-  amount    Float
-  category  String
-  date      DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String
+  amount     Float
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  date       DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Income {
-  id        Int      @id @default(autoincrement())
-  name      String
-  amount    Float
-  category  String
-  date      DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String
+  amount     Float
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  date       DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
