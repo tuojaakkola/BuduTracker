@@ -35,3 +35,8 @@ Ymmärsin että erilaisten visuaalisten graafien tekeminen tuloista tai menoista
 
 12.11
 Modal komponentti tulojen/menojen lisäämiselle. Opin modalin rakanteista ja erilaisista tavoista miten sitä voi näyttää esim. animationtype: "slide". Sain myös lisää kokemusta formiin syötetyn datan validointiin. Kokeilin myös avata appiani expo sovelluksessa webin sijaan jolloin sain kasan virheilmoituksia. Selvittelyn jälkeen tajusin, että olen kotini netissä ja jossa puhelin ei ole yhdistettynä. Tästä selvittelystä opin etsimään ip osoitteen ipconfig komennolla sekä ymmärsin paremmin miksi tunnel yhteystilaa saatetaan käyttää tälläisissä tilanteissa.
+
+---
+
+13.11
+Home sivulle lisättiin FlatList, joka näyttää viimeisimmät tapahtumat. Tapahtuma itemien näyttämiseen luotiin TransactionItem komponentti, joka näyttää tapahtumat tärkeimmät tiedot. Opin lisää Flatlistin erilaisista ominaisuuksista kuten miten ladata lisää listan itemeitä jo ennenkuin lista loppuu(onEndReachedThreshhold).

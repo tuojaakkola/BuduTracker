@@ -47,19 +47,19 @@ async function main() {
     {
       name: 'Ruokaostokset',
       amount: 50,
-      categoryId: expenseCategories[0].id, // Ruoka
+      categoryId: expenseCategories[0].id, 
       date: new Date('2023-01-01'),
     },
     {
       name: 'Bussilippu',
       amount: 3,
-      categoryId: expenseCategories[1].id, // Liikenne
+      categoryId: expenseCategories[1].id, 
       date: new Date('2023-01-02'),
     },
     {
       name: 'Elokuvalippu',
       amount: 12,
-      categoryId: expenseCategories[2].id, // Viihde
+      categoryId: expenseCategories[2].id, 
       date: new Date('2023-01-03'),
     },
   ];
@@ -69,19 +69,19 @@ async function main() {
     {
       name: 'Kuukausipalkka',
       amount: 2500,
-      categoryId: incomeCategories[0].id, // Palkka
+      categoryId: incomeCategories[0].id,
       date: new Date('2023-01-01'),
     },
     {
       name: 'Osinkotuotto',
       amount: 300,
-      categoryId: incomeCategories[1].id, // Sijoitukset
+      categoryId: incomeCategories[1].id,
       date: new Date('2023-01-15'),
     },
     {
       name: 'Veronpalautus',
       amount: 500,
-      categoryId: incomeCategories[2].id, // Muut tulot
+      categoryId: incomeCategories[2].id, 
       date: new Date('2023-02-01'),
     },
   ];

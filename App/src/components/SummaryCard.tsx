@@ -12,9 +12,8 @@ export default function SummaryCard({
 }: SummaryCardProps) {
   const total = totalIncomes - totalExpenses;
 
-  // Calculate percentage for the bar
-  const percentage =
-    totalIncomes > 0
+  const incomePercentage =
+    totalIncomes + totalExpenses > 0
       ? (totalIncomes / (totalIncomes + totalExpenses)) * 100
       : 50;
 
@@ -27,12 +26,15 @@ export default function SummaryCard({
           { color: total >= 0 ? "#4ade80" : "#ef4444" },
         ]}
       >
-        {total >= 0 ? "+" : "-"}
+        {total >= 0 ? "+" : ""}
         {total.toFixed(2)} €
       </Text>
 
       <View style={styles.barBackground}>
-        <View style={[styles.barFill, { width: `${percentage}%` }]} />
+        <View style={[styles.barIncome, { width: `${incomePercentage}%` }]} />
+        <View
+          style={[styles.barExpense, { width: `${100 - incomePercentage}%` }]}
+        />
       </View>
 
       <View style={styles.row}>
@@ -74,11 +76,15 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     overflow: "hidden",
     marginBottom: 8,
+    flexDirection: "row",
   },
-  barFill: {
+  barIncome: {
     height: "100%",
     backgroundColor: "#4ade80",
-    borderRadius: 3,
+  },
+  barExpense: {
+    height: "100%",
+    backgroundColor: "#ef4444",
   },
   row: {
     flexDirection: "row",

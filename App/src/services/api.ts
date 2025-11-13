@@ -1,8 +1,8 @@
 import { Expense, Income, Category } from '../types';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL; 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;  
 
-// ========== CATEGORIES ==========
+// CATEGORIES 
 
 // Get all categories
 export const fetchCategories = async (): Promise<Category[]> => {
@@ -38,7 +38,7 @@ export const fetchCategoriesByType = async (type: 'income' | 'expense'): Promise
   }
 };
 
-// ========== EXPENSES ========== 
+//  EXPENSES 
 
 // Get all expenses
 export const fetchExpenses = async (): Promise<Expense[]> => {

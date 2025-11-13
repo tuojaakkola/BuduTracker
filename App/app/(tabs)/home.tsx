@@ -6,20 +6,30 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
+  FlatList,
 } from "react-native";
+import { useState } from "react";
 import SummaryCard from "../../src/components/SummaryCard";
 import AddTransactionModal, {
   TransactionData,
 } from "../../src/components/AddTransactionModal";
+import TransactionItem from "../../src/components/TransactionItem";
 import { useSummaryData } from "../../src/hooks/useSummaryData";
 import { createExpense, createIncome } from "../../src/services/api";
-import { useState } from "react";
 
 export default function HomeScreen() {
-  const { totalIncomes, totalExpenses, loading, error, loadData } =
-    useSummaryData();
+  const {
+    expenses,
+    incomes,
+    totalIncomes,
+    totalExpenses,
+    loading,
+    error,
+    loadData,
+  } = useSummaryData();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"income" | "expense">("income");
+  const [displayCount, setDisplayCount] = useState(10);
 
   const handleOpenModal = (type: "income" | "expense") => {
     setModalType(type);
@@ -50,7 +60,6 @@ export default function HomeScreen() {
         Alert.alert("Onnistui!", "Meno lisätty");
       }
 
-      // Päivitä data
       loadData();
       handleCloseModal();
     } catch (error) {
@@ -98,25 +107,39 @@ export default function HomeScreen() {
     );
   }
 
+  const latestTransactions = [...expenses, ...incomes]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, displayCount);
+
+  const allTransactions = [...expenses, ...incomes].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const loadMoreTransactions = () => {
+    if (displayCount < allTransactions.length) {
+      setDisplayCount((prev) => prev + 10);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <View style={{ position: "absolute", top: 40, zIndex: 10 }}>
-        <Text
-          style={{
-            color: "#ecececff",
-            fontSize: 20,
-            fontWeight: "bold",
-          }}
-        >
-          Syyskuu 2024
-        </Text>
-      </View>
-
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={{ position: "absolute", top: 40, zIndex: 10 }}>
+          <Text
+            style={{
+              color: "#ecececff",
+              fontSize: 20,
+              fontWeight: "bold",
+            }}
+          >
+            Syyskuu 2024
+          </Text>
+        </View>
+
         <View style={styles.titleSection}>
           <Text style={styles.sectionTitle}>Kuukauden tilanne</Text>
         </View>
@@ -143,6 +166,16 @@ export default function HomeScreen() {
 
         <View style={styles.eventsSection}>
           <Text style={styles.sectionTitle}>Viimeisimmät tapahtumat</Text>
+        </View>
+        <View style={styles.flatlistContainer}>
+          <FlatList
+            data={latestTransactions}
+            keyExtractor={(item, index) => `${item.id}-${item.date}-${index}`}
+            renderItem={({ item }) => <TransactionItem item={item} />}
+            scrollEnabled={false}
+            onEndReached={loadMoreTransactions}
+            onEndReachedThreshold={0.5}
+          />
         </View>
       </ScrollView>
 
@@ -214,5 +247,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
+  },
+  flatlistContainer: {
+    width: "90%",
   },
 });

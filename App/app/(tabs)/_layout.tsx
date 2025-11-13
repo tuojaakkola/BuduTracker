@@ -8,7 +8,7 @@ export default function TabLayout() {
         name="home"
         options={{
           headerShown: false,
-          title: "Home",
+          title: "Yhteenveto",
           tabBarIcon: ({ color }) => (
             <MaterialIcons size={28} name="home" color={color} />
           ),
@@ -18,7 +18,7 @@ export default function TabLayout() {
         name="reports"
         options={{
           headerShown: false,
-          title: "Reports",
+          title: "Raportit",
           tabBarIcon: ({ color }) => (
             <MaterialIcons size={28} name="assessment" color={color} />
           ),
@@ -28,9 +28,9 @@ export default function TabLayout() {
         name="settings"
         options={{
           headerShown: false,
-          title: "Settings",
+          title: "Kaavat",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="settings" color={color} />
+            <MaterialIcons size={28} name="dataset" color={color} />
           ),
         }}
       />
