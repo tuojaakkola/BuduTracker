@@ -16,7 +16,7 @@ export const fetchCategories = async (): Promise<Category[]> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe fetchCategories:', error);
+    console.error('Error fetchCategories:', error);
     throw error;
   }
 };
@@ -33,7 +33,7 @@ export const fetchCategoriesByType = async (type: 'income' | 'expense'): Promise
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe fetchCategoriesByType:', error);
+    console.error('Error fetchCategoriesByType:', error);
     throw error;
   }
 };
@@ -41,9 +41,13 @@ export const fetchCategoriesByType = async (type: 'income' | 'expense'): Promise
 //  EXPENSES 
 
 // Get all expenses
-export const fetchExpenses = async (): Promise<Expense[]> => {
+export const fetchExpenses = async (month?: string): Promise<Expense[]> => {
   try {
-    const response = await fetch(`${API_URL}/expenses`);
+    const url = month 
+      ? `${API_URL}/expenses?month=${month}` 
+      : `${API_URL}/expenses`;
+    
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error('Virhe menojen haussa');
@@ -52,7 +56,7 @@ export const fetchExpenses = async (): Promise<Expense[]> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe fetchExpenses:', error);
+    console.error('Error fetchExpenses:', error);
     throw error;
   }
 };
@@ -75,7 +79,7 @@ export const createExpense = async (expense: Omit<Expense, 'id' | 'createdAt' | 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe createExpense:', error);
+    console.error('Error createExpense:', error);
     throw error;
   }
 };
@@ -98,7 +102,7 @@ export const updateExpense = async (id: number, expense: Partial<Omit<Expense, '
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe updateExpense:', error);
+    console.error('Error updateExpense:', error);
     throw error;
   }
 };
@@ -114,7 +118,7 @@ export const deleteExpense = async (id: number): Promise<void> => {
       throw new Error('Virhe menon poistossa');
     }
   } catch (error) {
-    console.error('Virhe deleteExpense:', error);
+    console.error('Error deleteExpense:', error);
     throw error;
   }
 };
@@ -122,9 +126,13 @@ export const deleteExpense = async (id: number): Promise<void> => {
 // INCOMES 
 
 // Get all incomes  
-export const fetchIncomes = async (): Promise<Income[]> => {
+export const fetchIncomes = async (month?: string): Promise<Income[]> => {
   try {
-    const response = await fetch(`${API_URL}/incomes`);
+    const url = month 
+      ? `${API_URL}/incomes?month=${month}` 
+      : `${API_URL}/incomes`;
+    
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error('Virhe tulojen haussa');
@@ -133,7 +141,7 @@ export const fetchIncomes = async (): Promise<Income[]> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe fetchIncomes:', error);
+    console.error('Error fetchIncomes:', error);
     throw error;
   }
 };
@@ -156,7 +164,7 @@ export const createIncome = async (income: Omit<Income, 'id' | 'createdAt' | 'up
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe createIncome:', error);
+    console.error('Error createIncome:', error);
     throw error;
   }
 };
@@ -179,7 +187,7 @@ export const updateIncome = async (id: number, income: Partial<Omit<Income, 'id'
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Virhe updateIncome:', error);
+    console.error('Error updateIncome:', error);
     throw error;
   }
 };
@@ -195,7 +203,7 @@ export const deleteIncome = async (id: number): Promise<void> => {
       throw new Error('Virhe tulon poistossa');
     }
   } catch (error) {
-    console.error('Virhe deleteIncome:', error);
+    console.error('Error deleteIncome:', error);
     throw error;
   }
 };

@@ -1,15 +1,22 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Expense, Income } from "../types";
+import { formatCurrency } from "../utils/formatUtils";
+import { colors, spacing, typography, theme } from "../styles";
 
 interface TransactionItemProps {
   item: Expense | Income;
+  onPress?: () => void;
 }
 
-export default function TransactionItem({ item }: TransactionItemProps) {
+export default function TransactionItem({
+  item,
+  onPress,
+}: TransactionItemProps) {
   const isIncome = item.category?.type === "income";
   const sign = isIncome ? "+" : "-";
-  const color = isIncome ? "#4CAF50" : "#F44336";
+  const color = isIncome ? colors.success : colors.danger;
 
   // Format Date
   const date = new Date(item.date);
@@ -18,9 +25,22 @@ export default function TransactionItem({ item }: TransactionItemProps) {
   const formattedDate = `${day}.${month}`;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.iconContainer}>
-        <Text style={styles.icon}>{item.category?.icon}</Text>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View
+        style={[
+          styles.iconContainer,
+          { backgroundColor: item.category?.color || "#222525ff" },
+        ]}
+      >
+        <MaterialCommunityIcons
+          name={(item.category?.icon as any) || "help-circle"}
+          size={24}
+          color="#ffffff"
+        />
       </View>
 
       <View style={styles.contentContainer}>
@@ -31,9 +51,9 @@ export default function TransactionItem({ item }: TransactionItemProps) {
 
       <Text style={[styles.amount, { color }]}>
         {sign}
-        {item.amount.toFixed(2)} €
+        {formatCurrency(Number(item.amount))} €
       </Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -41,43 +61,39 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1a1f1aff",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    gap: 12,
+    backgroundColor: colors.background.secondary,
+    borderRadius: theme.borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    gap: spacing.md,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 8,
-    backgroundColor: "#222525ff",
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
-  },
-  icon: {
-    fontSize: 20,
   },
   contentContainer: {
     flex: 1,
   },
   categoryName: {
-    fontSize: 12,
-    color: "#7a8a7aff",
-    marginBottom: 2,
+    fontSize: typography.sizes.sm,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
   },
   transactionName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#ecececff",
-    marginBottom: 2,
+    fontSize: typography.sizes.base,
+    fontWeight: typography.weights.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.xs,
   },
   date: {
-    fontSize: 11,
-    color: "#7a8a7aff",
+    fontSize: typography.sizes.xs,
+    color: colors.text.secondary,
   },
   amount: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: typography.sizes.base,
+    fontWeight: typography.weights.bold,
   },
 });

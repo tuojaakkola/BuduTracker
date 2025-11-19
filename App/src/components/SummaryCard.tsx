@@ -1,5 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { formatCurrency } from "../utils/formatUtils";
+import { colors, spacing, typography, theme } from "../styles";
 
 interface SummaryCardProps {
   totalIncomes: number;
@@ -23,11 +25,11 @@ export default function SummaryCard({
       <Text
         style={[
           styles.totalAmount,
-          { color: total >= 0 ? "#4ade80" : "#ef4444" },
+          { color: total >= 0 ? colors.success : colors.danger },
         ]}
       >
         {total >= 0 ? "+" : ""}
-        {total.toFixed(2)} €
+        {formatCurrency(Number(total))} €
       </Text>
 
       <View style={styles.barBackground}>
@@ -40,11 +42,15 @@ export default function SummaryCard({
       <View style={styles.row}>
         <View>
           <Text style={styles.label}>Tulot</Text>
-          <Text style={styles.incomeText}>{totalIncomes.toFixed(2)} €</Text>
+          <Text style={styles.incomeText}>
+            {formatCurrency(Number(totalIncomes))} €
+          </Text>
         </View>
         <View style={{ alignItems: "flex-end" }}>
           <Text style={styles.label}>Menot</Text>
-          <Text style={styles.expenseText}>{totalExpenses.toFixed(2)} €</Text>
+          <Text style={styles.expenseText}>
+            {formatCurrency(Number(totalExpenses))} €
+          </Text>
         </View>
       </View>
     </View>
@@ -54,37 +60,37 @@ export default function SummaryCard({
 const styles = StyleSheet.create({
   summaryCard: {
     width: "90%",
-    backgroundColor: "#1a1f1aff",
-    borderRadius: 12,
-    padding: 12,
-    marginVertical: 8,
+    backgroundColor: colors.background.secondary,
+    borderRadius: theme.borderRadius.lg,
+    padding: spacing.md,
+    marginVertical: spacing.sm,
   },
   summaryLabel: {
-    color: "#7a8a7aff",
-    fontSize: 12,
-    marginBottom: 3,
+    color: colors.text.secondary,
+    fontSize: typography.sizes.sm,
+    marginBottom: spacing.xs,
   },
   totalAmount: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
+    fontSize: typography.sizes.xxxl,
+    fontWeight: typography.weights.bold,
+    marginBottom: spacing.md,
   },
   barBackground: {
     width: "100%",
     height: 6,
-    backgroundColor: "#2d3d2dff",
+    backgroundColor: colors.background.tertiary,
     borderRadius: 3,
     overflow: "hidden",
-    marginBottom: 8,
+    marginBottom: spacing.md,
     flexDirection: "row",
   },
   barIncome: {
     height: "100%",
-    backgroundColor: "#4ade80",
+    backgroundColor: colors.success,
   },
   barExpense: {
     height: "100%",
-    backgroundColor: "#ef4444",
+    backgroundColor: colors.danger,
   },
   row: {
     flexDirection: "row",
@@ -92,18 +98,18 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   label: {
-    color: "#7a8a7aff",
-    fontSize: 10,
-    marginBottom: 2,
+    color: colors.text.secondary,
+    fontSize: typography.sizes.xs,
+    marginBottom: spacing.xs,
   },
   incomeText: {
-    color: "#ecececff",
-    fontSize: 13,
-    fontWeight: "600",
+    color: colors.text.primary,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.semibold,
   },
   expenseText: {
-    color: "#ecececff",
-    fontSize: 13,
-    fontWeight: "600",
+    color: colors.text.primary,
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.semibold,
   },
 });

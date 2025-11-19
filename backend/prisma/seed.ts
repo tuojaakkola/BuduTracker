@@ -14,31 +14,31 @@ async function main() {
   // Create categories
   const expenseCategories = await Promise.all([
     prisma.category.create({
-      data: { name: 'Ruoka', type: 'expense', icon: '🍔', color: '#ef4444' },
+      data: { name: 'Ruoka', type: 'expense', icon: 'food', color: '#ef4444' },
     }),
     prisma.category.create({
-      data: { name: 'Liikenne', type: 'expense', icon: '🚗', color: '#f59e0b' },
+      data: { name: 'Liikenne', type: 'expense', icon: 'car', color: '#f59e0b' },
     }),
     prisma.category.create({
-      data: { name: 'Viihde', type: 'expense', icon: '🎬', color: '#8b5cf6' },
+      data: { name: 'Viihde', type: 'expense', icon: 'movie', color: '#8b5cf6' },
     }),
     prisma.category.create({
-      data: { name: 'Asuminen', type: 'expense', icon: '🏠', color: '#3b82f6' },
+      data: { name: 'Asuminen', type: 'expense', icon: 'home', color: '#3b82f6' },
     }),
     prisma.category.create({
-      data: { name: 'Terveys', type: 'expense', icon: '💊', color: '#10b981' },
+      data: { name: 'Terveys', type: 'expense', icon: 'medical-bag', color: '#10b981' },
     }),
   ]);
 
   const incomeCategories = await Promise.all([
     prisma.category.create({
-      data: { name: 'Palkka', type: 'income', icon: '💼', color: '#22c55e' },
+      data: { name: 'Palkka', type: 'income', icon: 'briefcase', color: '#10b981' },
     }),
     prisma.category.create({
-      data: { name: 'Sijoitukset', type: 'income', icon: '📈', color: '#14b8a6' },
+      data: { name: 'Sijoitukset', type: 'income', icon: 'chart-line', color: '#f59e0b' },
     }),
     prisma.category.create({
-      data: { name: 'Muut tulot', type: 'income', icon: '💰', color: '#06b6d4' },
+      data: { name: 'Muut tulot', type: 'income', icon: 'cash-multiple', color: '#3b82f6' },
     }),
   ]);
 
@@ -48,19 +48,19 @@ async function main() {
       name: 'Ruokaostokset',
       amount: 50,
       categoryId: expenseCategories[0].id, 
-      date: new Date('2023-01-01'),
+      date: new Date('2025-01-01'),
     },
     {
       name: 'Bussilippu',
       amount: 3,
       categoryId: expenseCategories[1].id, 
-      date: new Date('2023-01-02'),
+      date: new Date('2025-01-02'),
     },
     {
       name: 'Elokuvalippu',
       amount: 12,
       categoryId: expenseCategories[2].id, 
-      date: new Date('2023-01-03'),
+      date: new Date('2025-01-03'),
     },
   ];
 
@@ -70,19 +70,19 @@ async function main() {
       name: 'Kuukausipalkka',
       amount: 2500,
       categoryId: incomeCategories[0].id,
-      date: new Date('2023-01-01'),
+      date: new Date('2025-01-01'),
     },
     {
       name: 'Osinkotuotto',
       amount: 300,
       categoryId: incomeCategories[1].id,
-      date: new Date('2023-01-15'),
+      date: new Date('2025-01-15'),
     },
     {
       name: 'Veronpalautus',
       amount: 500,
       categoryId: incomeCategories[2].id, 
-      date: new Date('2023-02-01'),
+      date: new Date('2025-02-01'),
     },
   ];
 

@@ -9,17 +9,24 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { fetchCategoriesByType } from "../services/api";
-import { Category } from "../types";
+import { Category, Expense, Income } from "../types";
+import { parseLocaleCurrency, formatCurrency } from "../utils/formatUtils";
+import { colors, spacing, typography, theme } from "../styles";
 
 interface AddTransactionModalProps {
   visible: boolean;
   type: "income" | "expense";
   onClose: () => void;
   onSubmit: (data: TransactionData) => void;
+  onDelete?: (id: number) => void;
+  editMode?: boolean;
+  initialData?: Expense | Income;
 }
 
 export interface TransactionData {
+  id?: number;
   name: string;
   amount: string;
   categoryId: string;
@@ -31,6 +38,9 @@ export default function AddTransactionModal({
   type,
   onClose,
   onSubmit,
+  onDelete,
+  editMode = false,
+  initialData,
 }: AddTransactionModalProps) {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -38,6 +48,19 @@ export default function AddTransactionModal({
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Load initial data when in edit mode
+  useEffect(() => {
+    if (visible && editMode && initialData) {
+      setName(initialData.name);
+      setAmount(formatCurrency(initialData.amount));
+      setCategoryId(initialData.categoryId.toString());
+    } else if (visible && !editMode) {
+      setName("");
+      setAmount("");
+      setCategoryId("");
+    }
+  }, [visible, editMode, initialData]);
 
   // Search categories when modal opens
   useEffect(() => {
@@ -63,11 +86,12 @@ export default function AddTransactionModal({
       setMessage("Tapahtumalla täytyy olla nimi");
       return;
     }
-    if (!amount.trim() || isNaN(parseFloat(amount))) {
+    const parsedAmount = parseLocaleCurrency(amount.trim());
+    if (!amount.trim() || isNaN(parsedAmount)) {
       setMessage("Tapahtumalla täytyy olla summa");
       return;
     }
-    if (parseFloat(amount) <= 0) {
+    if (parsedAmount <= 0) {
       setMessage("Summa täytyy olla positiivinen luku");
       return;
     }
@@ -77,10 +101,12 @@ export default function AddTransactionModal({
     }
 
     onSubmit({
+      ...(editMode && initialData ? { id: initialData.id } : {}),
       name: name.trim(),
-      amount: amount.trim(),
+      amount: parsedAmount.toString(),
       categoryId,
-      date: new Date().toISOString(),
+      date:
+        editMode && initialData ? initialData.date : new Date().toISOString(),
     });
 
     setName("");
@@ -97,8 +123,14 @@ export default function AddTransactionModal({
     onClose();
   };
 
-  const title = type === "income" ? "Lisää Tulo" : "Lisää Meno";
-  const buttonColor = type === "income" ? "#0b7708ff" : "#4d0e0eff";
+  const title = editMode
+    ? type === "income"
+      ? "Muokkaa Tuloa"
+      : "Muokkaa Menoa"
+    : type === "income"
+    ? "Lisää Tulo"
+    : "Lisää Meno";
+  const buttonColor = type === "income" ? colors.success : colors.danger;
 
   return (
     <Modal
@@ -125,7 +157,7 @@ export default function AddTransactionModal({
                   message === "Tapahtumalla täytyy olla nimi" &&
                     styles.inputError,
                 ]}
-                placeholder="Esim. Ruokaostokset"
+                placeholder="Tapahtuman nimi"
                 placeholderTextColor="#7a8a7aff"
                 value={name}
                 onChangeText={(text) => {
@@ -149,11 +181,13 @@ export default function AddTransactionModal({
                     message === "Summa täytyy olla positiivinen luku") &&
                     styles.inputError,
                 ]}
-                placeholder="0.00"
+                placeholder="0,00"
                 placeholderTextColor="#7a8a7aff"
                 value={amount}
                 onChangeText={(text) => {
-                  setAmount(text);
+                  // Replace dots with commas automatically
+                  const formattedText = text.replace(".", ",");
+                  setAmount(formattedText);
                   if (
                     message === "Tapahtumalla täytyy olla summa" ||
                     message === "Summa täytyy olla positiivinen luku"
@@ -196,7 +230,18 @@ export default function AddTransactionModal({
                         }
                       }}
                     >
-                      <Text style={styles.categoryIcon}>{category.icon}</Text>
+                      <View
+                        style={[
+                          styles.categoryIconContainer,
+                          { backgroundColor: category.color },
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          name={(category.icon as any) || "help-circle"}
+                          size={20}
+                          color="#ffffff"
+                        />
+                      </View>
                       <Text
                         style={[
                           styles.categoryText,
@@ -217,11 +262,42 @@ export default function AddTransactionModal({
           </ScrollView>
 
           <View style={styles.buttonContainer}>
+            {editMode && onDelete && initialData && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => {
+                  Alert.alert(
+                    "Poista tapahtuma",
+                    "Haluatko varmasti poistaa tämän tapahtuman?",
+                    [
+                      { text: "Peruuta", style: "cancel" },
+                      {
+                        text: "Poista",
+                        style: "destructive",
+                        onPress: () => {
+                          onDelete(initialData.id);
+                          handleClose();
+                        },
+                      },
+                    ]
+                  );
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="delete"
+                  size={20}
+                  color="#ffffff"
+                />
+                <Text style={styles.deleteButtonText}>Poista</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={[styles.submitButton, { backgroundColor: buttonColor }]}
               onPress={handleSubmit}
             >
-              <Text style={styles.submitButtonText}>Tallenna</Text>
+              <Text style={styles.submitButtonText}>
+                {editMode ? "Päivitä" : "Tallenna"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -237,72 +313,72 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#1a1f1aff",
+    backgroundColor: colors.background.secondary,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "80%",
-    paddingBottom: 20,
+    paddingBottom: spacing.xxl,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
+    padding: spacing.xl,
     borderBottomWidth: 1,
-    borderBottomColor: "#2d3d2dff",
+    borderBottomColor: colors.border.medium,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#ecececff",
+    fontSize: typography.sizes.xxl,
+    fontWeight: typography.weights.bold,
+    color: colors.text.primary,
   },
   closeButton: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: "#2d3d2dff",
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: colors.background.tertiary,
     alignItems: "center",
     justifyContent: "center",
   },
   closeButtonText: {
-    fontSize: 20,
-    color: "#ecececff",
+    fontSize: typography.sizes.xl,
+    color: colors.text.primary,
   },
   formContainer: {
-    padding: 20,
+    padding: spacing.xl,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: spacing.xxl,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#ecececff",
-    marginBottom: 8,
+    fontSize: typography.sizes.base,
+    fontWeight: typography.weights.semibold,
+    color: colors.text.primary,
+    marginBottom: spacing.md,
   },
   input: {
-    backgroundColor: "#2d3d2dff",
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: "#ecececff",
+    backgroundColor: colors.background.tertiary,
+    borderRadius: theme.borderRadius.md,
+    padding: spacing.md,
+    fontSize: typography.sizes.lg,
+    color: colors.text.primary,
     borderWidth: 1,
-    borderColor: "#3d4d3dff",
+    borderColor: colors.border.light,
   },
   inputError: {
-    borderColor: "#dc2626",
+    borderColor: colors.danger,
     backgroundColor: "#3d2626",
   },
   errorMessage: {
-    color: "#ef4444",
-    fontSize: 12,
-    marginTop: 6,
-    fontWeight: "500",
+    color: colors.danger,
+    fontSize: typography.sizes.sm,
+    marginTop: spacing.sm,
+    fontWeight: typography.weights.semibold,
   },
   categoryContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: spacing.md,
   },
   categoryContainerError: {
     opacity: 0.6,
@@ -310,45 +386,67 @@ const styles = StyleSheet.create({
   categoryButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2d3d2dff",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    backgroundColor: colors.background.tertiary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: theme.borderRadius.full,
     borderWidth: 2,
     borderColor: "transparent",
+    gap: spacing.sm,
   },
   categoryButtonSelected: {
-    borderColor: "#4ade80",
+    borderColor: colors.success,
     backgroundColor: "#0f2f0fff",
   },
-  categoryIcon: {
-    fontSize: 18,
-    marginRight: 6,
+  categoryIconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: theme.borderRadius.sm,
+    alignItems: "center",
+    justifyContent: "center",
   },
   categoryText: {
-    fontSize: 14,
-    color: "#9ca3af",
+    fontSize: typography.sizes.base,
+    color: colors.text.muted,
   },
   categoryTextSelected: {
-    color: "#ecececff",
-    fontWeight: "600",
+    color: colors.text.primary,
+    fontWeight: typography.weights.semibold,
   },
   loadingText: {
-    color: "#7a8a7aff",
-    fontSize: 14,
+    color: colors.text.secondary,
+    fontSize: typography.sizes.base,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    flexDirection: "row",
+    gap: spacing.md,
+  },
+  deleteButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: colors.danger,
+    gap: spacing.sm,
+  },
+  deleteButtonText: {
+    color: "#ffffff",
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold,
   },
   submitButton: {
-    paddingVertical: 14,
-    borderRadius: 8,
+    flex: 1,
+    paddingVertical: spacing.lg,
+    borderRadius: theme.borderRadius.md,
     alignItems: "center",
   },
   submitButtonText: {
-    color: "#ecececff",
-    fontSize: 16,
-    fontWeight: "bold",
+    color: colors.text.primary,
+    fontSize: typography.sizes.lg,
+    fontWeight: typography.weights.bold,
   },
 });

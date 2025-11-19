@@ -17,7 +17,7 @@ router.post('/', async (req: Request, res: Response) => {
     const income = await prisma.income.create({
       data: {
         name,
-        amount: parseFloat(amount),
+        amount: parseFloat(amount.toString().replace(',', '.')),
         categoryId: parseInt(categoryId),
         date: new Date(date),
       },
@@ -35,13 +35,46 @@ router.post('/', async (req: Request, res: Response) => {
 // GET 
 router.get('/', async (req: Request, res: Response) => {
   try {
+
+    const { month } = req.query;
+    
+    // Rakennetaan WHERE-ehto dynaamisesti
+    let whereClause: any = {};
+    
+    if (month && typeof month === 'string') {
+      const parts = month.split('-');
+      const year = parts[0] as string;
+      const monthNum = parts[1] as string;
+      
+      // Kuukauden ensimmäinen päivä klo 00:00:00
+      const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
+      
+      // Kuukauden viimeinen päivä klo 23:59:59
+      const endDate = new Date(parseInt(year), parseInt(monthNum), 0, 23, 59, 59);
+      
+      whereClause = {
+        date: {
+          gte: startDate, // Greater Than or Equal (>=)
+          lte: endDate,   // Less Than or Equal (<=)
+        },
+      };
+    }
+
     const incomes = await prisma.income.findMany({
+      where: whereClause,
       include: {
         category: true,
       },
       orderBy: { date: 'desc' },
     });
-    res.json(incomes);
+
+    // Format amounts to always have 2 decimals
+    const formattedIncomes = incomes.map(income => ({
+      ...income,
+      amount: Number(income.amount.toFixed(2))
+    }));
+
+    res.json(formattedIncomes);
   } catch (error) {
     res.status(500).json({ error: 'Virhe tulojen haussa' });
   }
@@ -72,7 +105,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
       data: {
         ...(name && { name }),
-        ...(amount && { amount: parseFloat(amount) }),
+        ...(amount && { amount: parseFloat(amount.toString().replace(',', '.')) }),
         ...(categoryId && { categoryId: parseInt(categoryId) }),
         ...(date && { date: new Date(date) }),
       },
