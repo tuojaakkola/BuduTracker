@@ -10,14 +10,20 @@ router.post('/', async (req: Request, res: Response) => {
     const { name, amount, categoryId, date } = req.body;
 
     if (!name || !amount || !categoryId || !date) {
-      res.status(400).json({ error: 'Puuttuvia kenttiä' });
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    const parsedAmount = parseFloat(amount.toString().replace(',', '.'));
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      res.status(400).json({ error: 'Invalid amount - must be a positive number' });
       return;
     }
 
     const income = await prisma.income.create({
       data: {
         name,
-        amount: parseFloat(amount.toString().replace(',', '.')),
+        amount: parsedAmount,
         categoryId: parseInt(categoryId),
         date: new Date(date),
       },
@@ -28,7 +34,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json(income);
   } catch (error) {
-    res.status(500).json({ error: 'Virhe tulon luonnissa' });
+    res.status(500).json({ error: 'Error creating income' });
   }
 });
 
@@ -38,7 +44,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     const { month } = req.query;
     
-    // Rakennetaan WHERE-ehto dynaamisesti
+    // Build WHERE clause dynamically
     let whereClause: any = {};
     
     if (month && typeof month === 'string') {
@@ -46,10 +52,10 @@ router.get('/', async (req: Request, res: Response) => {
       const year = parts[0] as string;
       const monthNum = parts[1] as string;
       
-      // Kuukauden ensimmäinen päivä klo 00:00:00
+      // First day of the month at 00:00:00
       const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
       
-      // Kuukauden viimeinen päivä klo 23:59:59
+      // Last day of the month at 23:59:59
       const endDate = new Date(parseInt(year), parseInt(monthNum), 0, 23, 59, 59);
       
       whereClause = {
@@ -76,7 +82,7 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json(formattedIncomes);
   } catch (error) {
-    res.status(500).json({ error: 'Virhe tulojen haussa' });
+    res.status(500).json({ error: 'Error fetching incomes' });
   }
 });
 
@@ -86,7 +92,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const id = req.params.id;
     
     if (!id) {
-      res.status(400).json({ error: 'ID puuttuu' });
+      res.status(400).json({ error: 'Missing ID' });
       return;
     }
     
@@ -97,15 +103,25 @@ router.put('/:id', async (req: Request, res: Response) => {
     });
 
     if (!existingIncome) {
-      res.status(404).json({ error: 'Tuloa ei löytynyt' });
+      res.status(404).json({ error: 'Income not found' });
       return;
+    }
+
+    // Validate amount if provided
+    let parsedAmount: number | undefined;
+    if (amount !== undefined) {
+      parsedAmount = parseFloat(amount.toString().replace(',', '.'));
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        res.status(400).json({ error: 'Invalid amount - must be a positive number' });
+        return;
+      }
     }
 
     const updatedIncome = await prisma.income.update({
       where: { id: parseInt(id) },
       data: {
         ...(name && { name }),
-        ...(amount && { amount: parseFloat(amount.toString().replace(',', '.')) }),
+        ...(parsedAmount && { amount: parsedAmount }),
         ...(categoryId && { categoryId: parseInt(categoryId) }),
         ...(date && { date: new Date(date) }),
       },
@@ -116,7 +132,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     res.json(updatedIncome);
   } catch (error) {
-    res.status(500).json({ error: 'Virhe tulon päivityksessä' });
+    res.status(500).json({ error: 'Error updating income' });
   }
 });
 
@@ -126,7 +142,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const id = req.params.id;
     
     if (!id) {
-      res.status(400).json({ error: 'ID puuttuu' });
+      res.status(400).json({ error: 'Missing ID' });
       return;
     }
 
@@ -135,7 +151,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     });
 
     if (!income) {
-      res.status(404).json({ error: 'Tuloa ei löytynyt' });
+      res.status(404).json({ error: 'Income not found' });
       return;
     }
 
@@ -143,9 +159,9 @@ router.delete('/:id', async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
     });
 
-    res.json({ message: 'Tulo poistettu onnistuneesti' });
+    res.json({ message: 'Income deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Virhe tulon poistossa' });
+    res.status(500).json({ error: 'Error deleting income' });
   }
 });
 

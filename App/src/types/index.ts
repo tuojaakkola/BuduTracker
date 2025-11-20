@@ -31,3 +31,11 @@ export interface Income {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Settings {
+  id: number;
+  budgetEnabled: boolean;
+  budgetAmount: number;
+  createdAt: string;
+  updatedAt: string;
+}

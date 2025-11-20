@@ -33,13 +33,15 @@ export default function TransactionItem({
       <View
         style={[
           styles.iconContainer,
-          { backgroundColor: item.category?.color || "#222525ff" },
+          {
+            backgroundColor: item.category?.color || colors.background.tertiary,
+          },
         ]}
       >
         <MaterialCommunityIcons
           name={(item.category?.icon as any) || "help-circle"}
           size={24}
-          color="#ffffff"
+          color={colors.text.primary}
         />
       </View>
 

@@ -10,14 +10,20 @@ router.post('/', async (req: Request, res: Response) => {
     const { name, amount, categoryId, date } = req.body;
 
     if (!name || !amount || !categoryId || !date) {
-      res.status(400).json({ error: 'Puuttuvia kenttiä' });
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    const parsedAmount = parseFloat(amount.toString().replace(',', '.'));
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      res.status(400).json({ error: 'Invalid amount - must be a positive number' });
       return;
     }
 
     const expense = await prisma.expense.create({
       data: {
         name,
-        amount: parseFloat(amount.toString().replace(',', '.')),
+        amount: parsedAmount,
         categoryId: parseInt(categoryId),
         date: new Date(date),
       },
@@ -28,7 +34,7 @@ router.post('/', async (req: Request, res: Response) => {
 
     res.status(201).json(expense);
   } catch (error) {
-    res.status(500).json({ error: 'Virhe menon luonnissa' });
+    res.status(500).json({ error: 'Error creating expense' });
   }
 });
 
@@ -37,7 +43,7 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { month } = req.query;
     
-    // Rakennetaan WHERE-ehto dynaamisesti
+    // Build WHERE clause dynamically
     let whereClause: any = {};
     
     if (month && typeof month === 'string') {
@@ -45,10 +51,10 @@ router.get('/', async (req: Request, res: Response) => {
       const year = parts[0] as string;
       const monthNum = parts[1] as string;
       
-      // Kuukauden ensimmäinen päivä klo 00:00:00
+      // First day of the month at 00:00:00
       const startDate = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
       
-      // Kuukauden viimeinen päivä klo 23:59:59
+      // Last day of the month at 23:59:59
       const endDate = new Date(parseInt(year), parseInt(monthNum), 0, 23, 59, 59);
       
       whereClause = {
@@ -75,7 +81,7 @@ router.get('/', async (req: Request, res: Response) => {
     
     res.json(formattedExpenses);
   } catch (error) {
-    res.status(500).json({ error: 'Virhe menojen haussa' });
+    res.status(500).json({ error: 'Error fetching expenses' });
   }
 });
 
@@ -85,7 +91,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     const id = req.params.id;
     
     if (!id) {
-      res.status(400).json({ error: 'ID puuttuu' });
+      res.status(400).json({ error: 'Missing ID' });
       return;
     }
     
@@ -96,15 +102,25 @@ router.put('/:id', async (req: Request, res: Response) => {
     });
 
     if (!existingExpense) {
-      res.status(404).json({ error: 'Menoa ei löytynyt' });
+      res.status(404).json({ error: 'Expense not found' });
       return;
+    }
+
+    // Validate amount if provided
+    let parsedAmount: number | undefined;
+    if (amount !== undefined) {
+      parsedAmount = parseFloat(amount.toString().replace(',', '.'));
+      if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        res.status(400).json({ error: 'Invalid amount - must be a positive number' });
+        return;
+      }
     }
 
     const updatedExpense = await prisma.expense.update({
       where: { id: parseInt(id) },
       data: {
         ...(name && { name }),
-        ...(amount && { amount: parseFloat(amount.toString().replace(',', '.')) }),
+        ...(parsedAmount && { amount: parsedAmount }),
         ...(categoryId && { categoryId: parseInt(categoryId) }),
         ...(date && { date: new Date(date) }),
       },
@@ -115,7 +131,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     res.json(updatedExpense);
   } catch (error) {
-    res.status(500).json({ error: 'Virhe menon päivityksessä' });
+    res.status(500).json({ error: 'Error updating expense' });
   }
 });
 
@@ -125,7 +141,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const id = req.params.id;
     
     if (!id) {
-      res.status(400).json({ error: 'ID puuttuu' });
+      res.status(400).json({ error: 'Missing ID' });
       return;
     }
 
@@ -134,7 +150,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     });
 
     if (!expense) {
-      res.status(404).json({ error: 'Menoa ei löytynyt' });
+      res.status(404).json({ error: 'Expense not found' });
       return;
     }
 
@@ -142,9 +158,9 @@ router.delete('/:id', async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
     });
 
-    res.json({ message: 'Meno poistettu onnistuneesti' });
+    res.json({ message: 'Expense deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Virhe menon poistossa' });
+    res.status(500).json({ error: 'Error deleting expense' });
   }
 });
 

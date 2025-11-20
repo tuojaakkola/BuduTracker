@@ -16,7 +16,7 @@ export default function DonutChart({ data, title, type }: DonutChartProps) {
 
   data.forEach((item) => {
     const name = item.category?.name || "Muu";
-    const color = item.category?.color || "#cccccc";
+    const color = item.category?.color || colors.text.muted;
     if (!totals[name]) totals[name] = { sum: 0, color, name };
     totals[name].sum += Number(item.amount);
   });

@@ -158,7 +158,7 @@ export default function AddTransactionModal({
                     styles.inputError,
                 ]}
                 placeholder="Tapahtuman nimi"
-                placeholderTextColor="#7a8a7aff"
+                placeholderTextColor={colors.text.muted}
                 value={name}
                 onChangeText={(text) => {
                   setName(text);
@@ -182,7 +182,7 @@ export default function AddTransactionModal({
                     styles.inputError,
                 ]}
                 placeholder="0,00"
-                placeholderTextColor="#7a8a7aff"
+                placeholderTextColor={colors.text.muted}
                 value={amount}
                 onChangeText={(text) => {
                   // Replace dots with commas automatically
@@ -239,7 +239,7 @@ export default function AddTransactionModal({
                         <MaterialCommunityIcons
                           name={(category.icon as any) || "help-circle"}
                           size={20}
-                          color="#ffffff"
+                          color={colors.text.primary}
                         />
                       </View>
                       <Text
@@ -292,7 +292,10 @@ export default function AddTransactionModal({
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              style={[styles.submitButton, { backgroundColor: buttonColor }]}
+              style={[
+                styles.submitButton,
+                { backgroundColor: editMode ? colors.success : buttonColor },
+              ]}
               onPress={handleSubmit}
             >
               <Text style={styles.submitButtonText}>
@@ -367,7 +370,7 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.danger,
-    backgroundColor: "#3d2626",
+    backgroundColor: colors.background.tertiary,
   },
   errorMessage: {
     color: colors.danger,
@@ -396,7 +399,7 @@ const styles = StyleSheet.create({
   },
   categoryButtonSelected: {
     borderColor: colors.success,
-    backgroundColor: "#0f2f0fff",
+    backgroundColor: colors.background.primary,
   },
   categoryIconContainer: {
     width: 28,
@@ -434,7 +437,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   deleteButtonText: {
-    color: "#ffffff",
+    color: colors.text.primary,
     fontSize: typography.sizes.lg,
     fontWeight: typography.weights.bold,
   },

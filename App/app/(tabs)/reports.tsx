@@ -123,13 +123,17 @@ const styles = StyleSheet.create({
   },
   header: {
     width: "100%",
-    backgroundColor: colors.background.primary,
+    backgroundColor: "rgba(9, 56, 7, 0.95)",
     paddingTop: 60,
     paddingBottom: spacing.xxl,
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: colors.background.secondary,
-    ...theme.shadows.medium,
+    borderBottomColor: colors.border.light,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
   },
   headerTitle: {
     color: colors.text.primary,
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
   },
   activeTab: {
-    backgroundColor: "#0d5a0aff",
+    backgroundColor: colors.success,
     ...theme.shadows.medium,
   },
   tabText: {

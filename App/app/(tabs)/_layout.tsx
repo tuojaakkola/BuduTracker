@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { colors, spacing } from "../../src/styles";
 
 export default function TabLayout() {
   return (
@@ -7,19 +8,19 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: "#39ff88",
-        tabBarInactiveTintColor: "#8b9aa7",
+        tabBarActiveTintColor: colors.success,
+        tabBarInactiveTintColor: colors.text.muted,
 
         tabBarStyle: {
-          backgroundColor: "#0b1d12",
-          height: 70,
+          backgroundColor: "rgba(11, 29, 18, 0.75)",
+          height: 65,
           borderTopWidth: 0,
           position: "absolute",
-          left: 10,
-          right: 10,
-          bottom: 5,
-          borderRadius: 20,
-          paddingTop: 8,
+          left: spacing.xl * 2,
+          right: spacing.xl * 2,
+          bottom: spacing.xs,
+          borderRadius: spacing.lg,
+          paddingTop: spacing.xs,
         },
 
         tabBarLabelStyle: {
@@ -48,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Kaavat",
+          title: "Asetukset",
           tabBarIcon: ({ color }) => (
             <MaterialIcons size={28} name="dataset" color={color} />
           ),

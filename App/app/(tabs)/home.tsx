@@ -8,9 +8,10 @@ import {
   Alert,
   FlatList,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SummaryCard from "../../src/components/SummaryCard";
 import MonthSelector from "../../src/components/MonthSelector";
+import BudgetProgress from "../../src/components/BudgetProgress";
 import AddTransactionModal, {
   TransactionData,
 } from "../../src/components/AddTransactionModal";
@@ -24,8 +25,12 @@ import {
   updateIncome,
   deleteExpense,
   deleteIncome,
+  fetchSettings,
 } from "../../src/services/api";
-import { Expense, Income } from "../../src/types";
+import { Expense, Income, Settings } from "../../src/types";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { colors, spacing, typography, theme } from "../../src/styles";
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -36,8 +41,27 @@ export default function HomeScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<
     Expense | Income | null
   >(null);
+  const [budgetSettings, setBudgetSettings] = useState<Settings | null>(null);
   const { expenses, incomes, loading, error, loadData } =
     useSummaryData(selectedDate);
+
+  // Load budget settings
+  const loadBudgetSettings = async () => {
+    try {
+      const settings = await fetchSettings();
+      setBudgetSettings(settings);
+    } catch (error) {
+      console.error("Error loading budget settings:", error);
+    }
+  };
+
+  // Load data and budget when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+      loadBudgetSettings();
+    }, [selectedDate])
+  );
 
   const handleOpenModal = (
     type: "income" | "expense",
@@ -98,7 +122,37 @@ export default function HomeScreen() {
             categoryId: parseInt(data.categoryId),
             date: data.date,
           });
-          Alert.alert("Onnistui!", "Meno lisätty");
+
+          // Check if budget is exceeded after adding expense
+          if (
+            budgetSettings?.budgetEnabled &&
+            budgetSettings.budgetAmount > 0
+          ) {
+            const currentTotalExpenses = expenses.reduce(
+              (sum, exp) => sum + Number(exp.amount),
+              0
+            );
+            const newTotalExpenses =
+              currentTotalExpenses + parseFloat(data.amount);
+            const wasUnderBudget =
+              currentTotalExpenses <= budgetSettings.budgetAmount;
+            const isNowOverBudget =
+              newTotalExpenses > budgetSettings.budgetAmount;
+
+            if (wasUnderBudget && isNowOverBudget) {
+              Alert.alert(
+                "Onneksi olkoon! 🎉",
+                `Rahasi ovat nyt loppu tältä kuukaudelta.\n\nBudjetin ylitys: ${(
+                  newTotalExpenses - budgetSettings.budgetAmount
+                ).toFixed(2)}€ :(`,
+                [{ text: "OK" }]
+              );
+            } else {
+              Alert.alert("Onnistui!", "Meno lisätty");
+            }
+          } else {
+            Alert.alert("Onnistui!", "Meno lisätty");
+          }
         }
       }
 
@@ -131,8 +185,8 @@ export default function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0b7708ff" />
-        <Text style={{ color: "#ecececff", marginTop: 10 }}>Ladataan...</Text>
+        <ActivityIndicator size="large" color={colors.success} />
+        <Text style={styles.loadingText}>Ladataan...</Text>
       </View>
     );
   }
@@ -140,28 +194,9 @@ export default function HomeScreen() {
   if (error) {
     return (
       <View style={styles.container}>
-        <Text
-          style={{
-            color: "#ff6b6b",
-            fontSize: 16,
-            textAlign: "center",
-            marginHorizontal: 20,
-          }}
-        >
-          {error}
-        </Text>
-        <TouchableOpacity
-          onPress={loadData}
-          style={{
-            marginTop: 20,
-            padding: 15,
-            borderRadius: 10,
-            backgroundColor: "#0b7708ff",
-          }}
-        >
-          <Text style={{ color: "#94ca94ff", fontWeight: "bold" }}>
-            Yritä uudelleen
-          </Text>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity onPress={loadData} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>Yritä uudelleen</Text>
         </TouchableOpacity>
       </View>
     );
@@ -201,6 +236,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Text style={styles.headerTitle}>Yhteenveto</Text>
         <MonthSelector
           selectedDate={selectedDate}
           onMonthChange={changeMonth}
@@ -212,14 +248,18 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.titleSection}>
-          <Text style={styles.sectionTitle}>Kuukauden tilanne</Text>
-        </View>
-
         <SummaryCard
           totalIncomes={monthlyTotalIncomes}
           totalExpenses={monthlyTotalExpenses}
         />
+
+        {/* Budget Progress */}
+        {budgetSettings?.budgetEnabled && budgetSettings.budgetAmount > 0 && (
+          <BudgetProgress
+            totalExpenses={monthlyTotalExpenses}
+            budgetAmount={budgetSettings.budgetAmount}
+          />
+        )}
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -277,88 +317,98 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#093807ff",
+    backgroundColor: colors.background.primary,
     alignItems: "center",
   },
   header: {
     width: "100%",
-    backgroundColor: "#093807ff",
-    paddingTop: 60,
-    paddingBottom: 20,
+    backgroundColor: "rgba(9, 56, 7, 0.95)",
+    paddingTop: spacing.xxl * 2,
+    paddingBottom: spacing.lg,
     alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#1a1f1aff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    borderBottomColor: colors.border.light,
+    ...theme.shadows.medium,
+  },
+  headerTitle: {
+    color: colors.text.primary,
+    fontSize: typography.sizes.xxl,
+    fontWeight: typography.weights.bold as any,
+    marginBottom: spacing.md,
   },
   scrollContainer: {
     width: "100%",
   },
   scrollContent: {
     alignItems: "center",
-    paddingTop: 16,
-    paddingBottom: 36,
-  },
-  titleSection: {
-    width: "90%",
-    marginBottom: 12,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xxl,
   },
   eventsSection: {
     width: "90%",
-    marginTop: 24,
-    marginBottom: 12,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
-    color: "#ecececff",
-    fontSize: 21,
-    fontWeight: "bold",
+    color: colors.text.primary,
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.bold as any,
   },
   buttonContainer: {
     flexDirection: "row",
-    gap: 12,
-    marginTop: 20,
-    marginBottom: 16,
+    gap: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
     width: "90%",
   },
   addIncomeButton: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: "#10b981",
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: colors.success,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#10b981",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    ...theme.shadows.medium,
   },
   addExpenseButton: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: "#ef4444",
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: colors.danger,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#ef4444",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    ...theme.shadows.medium,
   },
   buttonText: {
-    color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "700",
+    color: colors.text.primary,
+    fontSize: typography.sizes.xl,
+    fontWeight: typography.weights.semibold as any,
     textAlign: "center",
   },
   flatlistContainer: {
     width: "90%",
-    paddingBottom: 65,
+    paddingBottom: spacing.xxl * 2,
+  },
+  loadingText: {
+    color: colors.text.primary,
+    marginTop: spacing.sm,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: typography.sizes.md,
+    textAlign: "center",
+    marginHorizontal: spacing.lg,
+  },
+  retryButton: {
+    marginTop: spacing.lg,
+    padding: spacing.md,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: colors.success,
+  },
+  retryButtonText: {
+    color: colors.text.primary,
+    fontWeight: typography.weights.bold as any,
   },
 });

@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from "react-native";
+import { colors, typography, spacing } from "../src/styles";
 
 export default function NotFound() {
   return (
     <View style={styles.container}>
-      <Text>404 - Not Found</Text>
+      <Text style={styles.text}>404 - Not Found</Text>
     </View>
   );
 }
@@ -11,8 +12,12 @@ export default function NotFound() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.background.primary,
     alignItems: "center",
     justifyContent: "center",
+  },
+  text: {
+    color: colors.text.primary,
+    fontSize: typography.sizes.lg,
   },
 });

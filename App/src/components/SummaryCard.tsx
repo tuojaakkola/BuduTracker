@@ -66,9 +66,10 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
   },
   summaryLabel: {
-    color: colors.text.secondary,
-    fontSize: typography.sizes.sm,
+    color: colors.text.primary,
+    fontSize: typography.sizes.xl,
     marginBottom: spacing.xs,
+    fontWeight: typography.weights.semibold,
   },
   totalAmount: {
     fontSize: typography.sizes.xxxl,

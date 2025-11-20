@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { colors, spacing, typography } from "../styles";
 
 export default function EmptyTransactionsList() {
   return (
@@ -11,12 +12,12 @@ export default function EmptyTransactionsList() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 40,
+    padding: spacing.xxl,
     alignItems: "center",
   },
   text: {
-    color: "#7a8a7aff",
-    fontSize: 16,
+    color: colors.text.secondary,
+    fontSize: typography.sizes.md,
     textAlign: "center",
   },
 });
