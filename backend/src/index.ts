@@ -6,6 +6,7 @@ import expensesRouter from './routes/expenses.js';
 import incomesRouter from './routes/incomes.js';
 import categoriesRouter from './routes/categories.js';
 import settingsRouter from './routes/settings.js';
+import { errorHandler } from './middleware/validation.js';
 
 const app: Express = express();
 const PORT = 3000;
@@ -19,6 +20,9 @@ app.use('/api/expenses', expensesRouter);
 app.use('/api/incomes', incomesRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/settings', settingsRouter);
+
+// Error handler (must be last)
+app.use(errorHandler);
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running at:`);
