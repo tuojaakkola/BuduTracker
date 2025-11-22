@@ -38,7 +38,7 @@ Prisma on moderni ORM (Object-Relational Mapping) työkalu, joka:
 Kehitysvaiheessa käytetty kevyt tietokanta, joka:
 
 - Ei vaadi erillistä tietokantapalvelinta
-- Sopii hyvin prototyyppivaiheeseen ja tässä projektissa mahdollisesti jopa loppuratkaisuksi
+- Sopii hyvin prototyyppivaiheeseen ja tässä projektissa jopa loppuratkaisuksi
 - Helppo siirtää tuotantoon esim. PostgreSQL:ään
 
 ## Projektin rakenne
@@ -218,14 +218,29 @@ router.get("/", async (req: Request, res: Response) => {
 
 **Opittu:** RESTful API:ssa query-parametrit ovat standardi tapa suodattaa dataa. Tämä parantaa suorituskykyä, koska backend palauttaa vain tarvittavan datan sen sijaan että frontend lataisi kaiken ja suodattaisi itse.
 
-#### Desimaalilukujen käsittely
+#### Keskitetty validointi ja DTO:t
 
-```typescript
-const amount = parseFloat(req.body.amount.toString().replace(",", "."));
-const roundedAmount = parseFloat(amount.toFixed(2));
+Projektissa validointi ja virheenkäsittely on keskitetty yhteen middleware-tiedostoon (`backend/src/middleware/validation.ts`). Syötteiden tarkistus, tyyppimuunnokset (esim. merkkijono → Date, pilkku → piste desimaaleissa) ja DTO-tyypitys suoritetaan ennen kuin controllerit saavat datan. DTO-tiedostot sijaitsevat `backend/src/types/dto/` ja varmistavat end‑to‑end tyyppiturvallisuuden.
+
+Hyödyt:
+
+- Yhtenäinen validointilogiikka ja selkeät virheilmoitukset (400/404/409)
+- Controllerit keskittyvät liiketoimintalogiikkaan ja muotoiluun, eivät validointiin
+- Parempi testattavuus ja ylläpidettävyys
+
+#### Settings singleton (upsert-malli)
+
+Asetukset (Settings) on toteutettu singleton-mallilla: sovelluksessa on tarkoitus olla aina vain yksi settings-rivi. Tämä tehdään Prisman `upsert`-kutsulla, joka päivittää olemassa olevan rivin tai luo sen, jos sitä ei ole
+
+Esimerkki:
+
+```ts
+const settings = await prisma.settings.upsert({
+  where: { id: 1 },
+  update: { budgetEnabled, budgetAmount },
+  create: { id: 1, budgetEnabled, budgetAmount },
+});
 ```
-
-**Opittu:** JavaScript ja TypeScript käyttävät pistettä desimaalierottimena, mutta suomalaiset käyttäjät syöttävät pilkkuja mobiililaitteilla. Backend täytyy normalisoida nämä ennen tallennusta. Lisäksi JSON-serialisointi voi kadottaa desimaalit, joten ne täytyy pakottaa 2 desimaalin tarkkuuteen.
 
 ---
 
@@ -463,7 +478,7 @@ const parseAmount = (value: any): number => {
 
 ## Yhteenveto
 
-Tämä seminaarityö syvensi ymmärrystäni backend-kehityksestä Node.js-ekosysteemissä. Express.js ja TypeScript yhdistelmä tarjoaa modernin ja tehokkaan tavan rakentaa RESTful API:ta, vaikkakin se vaatii enemmän manuaalista konfiguraatiota verrattuna Spring Bootiin.
+Tämä seminaarityö syvensi ymmärrystäni backend-kehityksestä Node.js-ekosysteemissä. Tykkäsin Expressin minimalistisuudesta ja backendin kehityksestä tutummalla kielellä sekä middleware arkkitehtuurista.
 
 ## Lähteet
 
